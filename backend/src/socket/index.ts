@@ -18,11 +18,6 @@ export class SocketHandler {
       socket.on('disconnect', () => {
         console.log('User  disconnected from Websocket Server ', socket.id);
       });
-
-      socket.on('message', ({ message }: { message: string }) => {
-        console.log('Message from ', socket.id + ' ' + message);
-        this.io.emit('recieved-message', { message: 'Message is Recieved' });
-      });
     });
   }
 

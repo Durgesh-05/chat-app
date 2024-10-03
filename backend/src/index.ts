@@ -18,3 +18,5 @@ app.get('/', (req: Request, res: Response) => {
 server.listen(port, () => {
   console.log(`Server is Listening at Port: ${port}`);
 });
+
+export { socketHandler };
