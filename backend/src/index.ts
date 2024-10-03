@@ -2,8 +2,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 import express, { Request, Response } from 'express';
 import { createServer } from 'http';
-import { SocketHandler } from './socket';
+import { SocketHandler } from './socket/SocketHandler';
+import userRouter from './routes/user.route';
 
+// Init
 const app = express();
 const port = process.env.PORT || 8000;
 const server = createServer(app);
@@ -11,6 +13,12 @@ const server = createServer(app);
 const socketHandler = new SocketHandler(server);
 socketHandler.onConnect();
 
+// Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use('/api/v1/user', userRouter);
+
+// Server Check
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: `Server is Healthy and Listening at Port: ${port}` });
 });
