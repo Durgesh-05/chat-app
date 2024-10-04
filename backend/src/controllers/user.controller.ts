@@ -64,11 +64,10 @@ export const userSignup = async (
     res
       .status(201)
       .json(new ApiResponse(user, 'Registration SuccessFull', 201));
-    return next();
   } catch (e) {
     console.error('Failed to register user ', e);
     res.status(500).json(new ApiResponse(null, 'Something Went Wrong', 500));
-    return next(e);
+    next(e);
   }
 };
 
@@ -104,15 +103,29 @@ export const userSignin = async (
       }
 
       const token = generateToken(user.id, user.email, user.name);
-      res.cookie('token', token);
-      res
-        .status(200)
-        .json(new ApiResponse({ token: token }, 'Login SuccessFull', 200));
-      return next();
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: true,
+        maxAge: 10 * 24 * 60 * 60 * 1000,
+      });
+      res.status(200).json(
+        new ApiResponse(
+          {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            createdAt: user.createdAt,
+            token: token,
+          },
+          'Login SuccessFull',
+          200
+        )
+      );
     }
   } catch (e) {
     console.error('Failed to signin user ', e);
     res.status(500).json(new ApiResponse(null, 'Something Went Wrong', 500));
-    return next(e);
+    next(e);
   }
 };

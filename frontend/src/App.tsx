@@ -1,6 +1,35 @@
 import './App.css';
+import { Route, Routes } from 'react-router-dom';
+import { ChatPage, HomePage, Signin, Signup } from './pages';
+import { useEffect } from 'react';
+import { useRecoilState } from 'recoil';
+import { authAtom } from './store/atom';
 const App = () => {
-  return <h1 className='text-3xl font-bold underline'>Hello world!</h1>;
+  const [authState, setAuthState] = useRecoilState(authAtom);
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      if (!user.accessToken) {
+        setAuthState({
+          user: null,
+          isAuthenticated: false,
+        });
+      }
+      setAuthState({
+        user,
+        isAuthenticated: true,
+      });
+    }
+  }, []);
+  return (
+    <Routes>
+      <Route path='/' element={<HomePage authState={authState} />} />
+      <Route path='/chat' element={<ChatPage />} />
+      <Route path='/signup' element={<Signup />} />
+      <Route path='/signin' element={<Signin />} />
+    </Routes>
+  );
 };
 
 export default App;
