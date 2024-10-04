@@ -25,7 +25,7 @@ const App = () => {
   return (
     <Routes>
       <Route path='/' element={<HomePage authState={authState} />} />
-      <Route path='/chat' element={<ChatPage />} />
+      <Route path='/chat' element={<ChatPage authState={authState} />} />
       <Route path='/signup' element={<Signup />} />
       <Route path='/signin' element={<Signin />} />
     </Routes>
