@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import { createServer } from 'http';
 import { SocketHandler } from './socket/SocketHandler';
 import userRouter from './routes/user.route';
+import chatRouter from './routes/chat.route';
 import { Socket } from 'socket.io';
 
 // Init
@@ -26,20 +27,21 @@ app.use(
 );
 app.use(express.urlencoded({ extended: false }));
 app.use('/api/v1/user', userRouter);
-io.use((socket: Socket, next) => {
-  const { token } = socket.handshake.auth;
-  console.log(token);
-  if (token) {
-    try {
-      const payload = jwt.verify(token, String(process.env.JWT_SECRET));
-      socket.data.user = payload;
-      next();
-    } catch (e) {
-      console.error('Authentication error:', e);
-      next(new Error('Authentication error: Invalid token'));
-    }
-  }
-});
+app.use('/api/v1/chat', chatRouter);
+// io.use((socket: Socket, next) => {
+//   const { token } = socket.handshake.auth;
+//   console.log(token);
+//   if (token) {
+//     try {
+//       const payload = jwt.verify(token, String(process.env.JWT_SECRET));
+//       socket.data.user = payload;
+//       next();
+//     } catch (e) {
+//       console.error('Authentication error:', e);
+//       next(new Error('Authentication error: Invalid token'));
+//     }
+//   }
+// });
 
 // Server Check
 app.get('/', (req: Request, res: Response) => {

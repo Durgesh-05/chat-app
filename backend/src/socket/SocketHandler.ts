@@ -1,13 +1,16 @@
 import { Server, Socket } from 'socket.io';
-export interface UserData {
-  username: string;
-  name: string;
-  id: string;
-}
+import { prisma } from '../db';
 
 interface PrivateChats {
-  userId1: string;
-  userId2: string;
+  senderId: string;
+  recipientId: string;
+}
+
+interface RoomMessage {
+  roomId: string;
+  senderId: string;
+  recipientId: string;
+  message: string;
 }
 
 export class SocketHandler {
@@ -31,20 +34,48 @@ export class SocketHandler {
         console.log('User  disconnected from Websocket Server ', socket.id);
       });
 
-      const userData = this.getUserData(socket);
-      socket.emit('me', userData);
-    });
-  }
+      socket.on('join room', async ({ roomId }: { roomId: string }) => {
+        const isRoomValid = await this.getPrivateChat(roomId);
+        if (isRoomValid) {
+          console.log('RoomID ', roomId);
+          socket.join(roomId);
+        }
+      });
 
-  private getUserData(socket: Socket) {
-    return {
-      name: socket.data.user.name,
-      username: socket.data.user.username,
-      id: socket.data.user.id,
-    } as UserData;
+      socket.on(
+        'send message',
+        ({ senderId, recipientId, roomId, message }: RoomMessage) => {
+          console.log(
+            'Message from senderId: ',
+            senderId,
+            ' to recipientId: ',
+            recipientId,
+            ' from room ',
+            roomId
+          );
+
+          socket.broadcast
+            .to(roomId)
+            .emit('message', { message: message, senderId: senderId });
+        }
+      );
+    });
   }
 
   getIo() {
     return this.io;
+  }
+
+  private async getPrivateChat(roomId: string) {
+    const privateChat = await prisma.chat.findFirst({
+      where: {
+        id: roomId,
+      },
+    });
+    if (privateChat) {
+      return true;
+    }
+
+    return false;
   }
 }

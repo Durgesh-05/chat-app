@@ -129,3 +129,35 @@ export const userSignin = async (
     next(e);
   }
 };
+
+export const usersData = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id }: any = req.params;
+    const users = await prisma.user.findMany({
+      where: {
+        id: {
+          not: id,
+        },
+      },
+      select: {
+        name: true,
+        email: true,
+        id: true,
+        chats: true,
+        messages: true,
+      },
+    });
+
+    res
+      .status(200)
+      .json(new ApiResponse(users, 'Users Data Fetched Successfully', 200));
+  } catch (e) {
+    console.error('Failed to Fetch Users Data', e);
+    res.status(500).json(new ApiResponse(null, 'Something Went Wrong', 500));
+    next(e);
+  }
+};
