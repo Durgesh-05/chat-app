@@ -1,5 +1,4 @@
 import { Server, Socket } from 'socket.io';
-import { getChat } from '../controllers/chat.controller';
 export interface UserData {
   username: string;
   name: string;
@@ -34,24 +33,6 @@ export class SocketHandler {
 
       const userData = this.getUserData(socket);
       socket.emit('me', userData);
-
-      socket.on('join_room', async ({ userId1, userId2 }: PrivateChats) => {
-        const roomId = await this.joinPrivateChat(socket, userId1, userId2);
-        socket.emit('roomId', { roomId });
-      });
-
-      socket.on(
-        'send_message',
-        ({ message, roomId }: { message: string; roomId: string }) => {
-          console.log(
-            'Message Recieved from Room ',
-            roomId + ' ' + 'message ',
-            message
-          );
-
-          this.io.to(roomId).emit('message', { message: message });
-        }
-      );
     });
   }
 
@@ -61,16 +42,6 @@ export class SocketHandler {
       username: socket.data.user.username,
       id: socket.data.user.id,
     } as UserData;
-  }
-
-  private async joinPrivateChat(
-    socket: Socket,
-    user1Id: string,
-    user2Id: string
-  ) {
-    let roomId: string = await getChat(user1Id, user2Id);
-    socket.join(roomId);
-    return roomId;
   }
 
   getIo() {
