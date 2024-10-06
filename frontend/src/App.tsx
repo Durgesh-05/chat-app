@@ -1,9 +1,10 @@
 import './App.css';
 import { Route, Routes } from 'react-router-dom';
-import { ChatPage, HomePage, Signin, Signup } from './pages';
+import { HomePage, Signin, Signup } from './pages';
 import { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
 import { authAtom } from './store/atom';
+import { ChatPage } from './pages/ChatPage';
 const App = () => {
   const [authState, setAuthState] = useRecoilState(authAtom);
   useEffect(() => {
@@ -24,8 +25,8 @@ const App = () => {
   }, []);
   return (
     <Routes>
-      <Route path='/' element={<HomePage authState={authState} />} />
-      <Route path='/chat' element={<ChatPage authState={authState} />} />
+      <Route path='/' element={<HomePage />} />
+      <Route path='/chat/:id' element={<ChatPage authState={authState} />} />
       <Route path='/signup' element={<Signup />} />
       <Route path='/signin' element={<Signin />} />
     </Routes>
