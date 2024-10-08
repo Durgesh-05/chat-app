@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
-import { AuthState } from '../store/atom';
+import { useEffect, useState } from 'react';
+import { AuthState, socketAtom } from '../store/atom';
 import axios from 'axios';
-import { io } from 'socket.io-client';
 import { BACKEND_URL } from '../utils/utils';
 import { useParams } from 'react-router-dom';
+import { useRecoilValue } from 'recoil';
 
 export const ChatPage = ({ authState }: { authState: AuthState }) => {
   const { id } = useParams();
-  const socket = useMemo(() => io(`${BACKEND_URL}`), []);
+  const socket = useRecoilValue(socketAtom);
   const [username, setUsername] = useState<string>('');
   const [roomId, setRoomId] = useState<string>('');
   const [messages, setMessages] = useState<
@@ -45,34 +45,38 @@ export const ChatPage = ({ authState }: { authState: AuthState }) => {
   }, [authState.user, id]);
 
   useEffect(() => {
-    socket.on('connect', () => {
-      console.log('Connected to WS Server');
-    });
+    if (socket) {
+      socket.on('connect', () => {
+        console.log('Connected to WS Server');
+      });
 
-    socket.on(
-      'message',
-      ({ message, senderId }: { message: string; senderId: string }) => {
-        console.log('Message: ', message, ' by: ', senderId);
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { text: message, senderId },
-        ]);
-      }
-    );
+      socket.on(
+        'message',
+        ({ message, senderId }: { message: string; senderId: string }) => {
+          console.log('Message: ', message, ' by: ', senderId);
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { text: message, senderId },
+          ]);
+        }
+      );
+    }
 
     return () => {
-      socket.off('connect');
-      socket.disconnect();
+      socket?.off('connect');
+      socket?.off('message');
     };
-  }, [authState.user]);
+  }, [authState.user, socket]);
 
   const handleJoinRoom = () => {
-    socket.emit('join room', { roomId });
-    setHasJoinedRoom(true);
+    if (socket) {
+      socket.emit('join room', { roomId: id });
+      setHasJoinedRoom(true);
+    }
   };
 
   const handleSendMessage = () => {
-    if (newMessage.trim() && hasJoinedRoom) {
+    if (newMessage.trim() && hasJoinedRoom && socket) {
       socket.emit('send message', {
         roomId,
         message: newMessage,

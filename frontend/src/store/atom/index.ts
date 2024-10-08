@@ -1,5 +1,6 @@
 import { atom } from 'recoil';
 import { LoginDataProps } from '../../api/auth';
+import { Socket } from 'socket.io-client';
 
 export interface AuthState {
   user: LoginDataProps | null;
@@ -12,4 +13,9 @@ export const authAtom = atom<AuthState>({
     user: null,
     isAuthenticated: false,
   },
+});
+
+export const socketAtom = atom<Socket | null>({
+  key: 'socketAtom',
+  default: null,
 });
